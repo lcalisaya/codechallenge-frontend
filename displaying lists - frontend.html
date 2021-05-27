@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Displaying API Data</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+</head>
+<body>
+    <main id="app">
+
+        <!-- Bootstrap navbar -->
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <a class="navbar-brand" href="#">Company Name</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+              <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+            </div>
+        </nav>
+        <br>
+
+        <h4 class="text-center">Displaying lists</h4>
+        <br>
+
+        <!-- Tabs to display -->
+        <ul class="nav nav-tabs" id="myTab" role="tablist">
+            <li class="nav-item">
+              <a class="nav-link active" id="children-tab" data-toggle="tab" href="#children" role="tab" aria-controls="children" aria-selected="true">Children</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" id="products-tab" data-toggle="tab" href="#products" role="tab" aria-controls="products" aria-selected="false">Products</a>
+            </li>
+        </ul>
+        <br>
+
+        <div class="tab-content" id="myTabContent">
+            <div class="tab-pane fade show active" id="children" role="tabpanel" aria-labelledby="children-tab">
+                
+                <!-- Bar containing sort inputs -->
+                <div id="childrenSortBar">
+                    <div class="row">
+                        <div class="col col-md-3">
+                            <select class="custom-select" id="childrenSelectBy" v-model="childrenSortBy" v-on:change="changeOrderChildren()">
+                                <option value="alphabetically" >Order by Name</option>
+                                <option value="id">Order by ID</option>
+                            </select>
+                        </div>
+                        <div class="col col-md-3">
+                            <select class="custom-select" id="childrenSelectOrder" v-model="childrenSortOrder" v-on:change="changeOrderChildren()">
+                                <option value="ascending" selected>Ascending Order</option>
+                                <option value="descending">Descending Order</option>
+                            </select>
+                        </div>
+                    </div>     
+                </div>
+                <br>
+
+                <!-- Children list rendered -->
+                <div class="container">
+                    <div class="row" >
+                        <div v-for="item in items.children">
+                            <div class="col col-md-3">
+                                <div class="card border border-primary" style="width: 18rem;">
+                                    <img class="card-img-top" src="https://www.bcheemaroofing.ca/assets/images/user-placeholder.jpg" alt="Card image cap">
+                                    <div class="card-body">
+                                        <h5 class="card-title">{{ item.first_name }} {{ item.last_name }}</h5>
+                                        <span class="card-text"><b>ID:</b> {{ item.id }} </span> <br>
+                                        <span class="card-text"><b>Birthday:</b> {{ item.birthdate.substring(0,10) }} </span> <br>
+                                        <span class="card-text">
+                                            <b>Products:</b>  
+                                            <ul>
+                                                <li v-for="product in item.products">{{ getProductBrandName(product) }}</li>
+                                            </ul>
+                                        </span>
+                                        <span class="card-text"><b>Next Size Date:</b> {{ item.next_size_date.substring(0,10) }} </span>  
+                                    </div>
+                                </div>
+                            </div>
+                        </div>       
+                    </div>
+                </div>
+         
+            </div>
+
+            <div class="tab-pane fade" id="products" role="tabpanel" aria-labelledby="products-tab">
+
+                <!-- Bar containing sort inputs -->
+                <div id="productsSortBar">
+                    <div class="row">
+                        <div class="col col-md-3">
+                            <select class="custom-select" id="productSelectBy" v-model="productsSortBy" v-on:change="changeOrderProducts()">
+                                <option value="product">Order by Product</option>
+                                <option value="brand">Order by Brand</option>
+                            </select>
+                        </div>
+                        <div class="col col-md-3">
+                            <select class="custom-select" id="productSelectOrder" v-model="productsSortOrder" v-on:change="changeOrderProducts()">
+                                <option value="ascending">Ascending Order</option>
+                                <option value="descending">Descending Order</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <br>
+
+                <!-- Products list rendered -->
+                <div class="container">
+                    <div class="row" >
+                        <div v-for="item in items.products">
+                            <div class="col col-md-3">
+                                <div class="card border border-primary" style="width: 18rem;">
+                                    <img class="card-img-top" src="https://icon-library.com/images/product-icon-png/product-icon-png-19.jpg" alt="Card image cap">
+                                    <div class="card-body">
+                                      <h5 class="card-title">{{ item.brand }} </h5>
+                                      <h5 class="card-title"> {{ item.Product }}</h5>
+                                      <span class="card-text"><b>Size:</b> {{ item.size == null ? '-' : item.size}} </span> <br>
+                                      <span class="card-text"><b>Inventory quantity:</b> {{ getQuantityInventory(item.guid) }} units</span> <br>
+                                      <span class="card-text"><b>Description:</b> {{ item.desc }} </span> <br>
+                                      <span class="card-text"><b>Order URL:</b> <a :href="item.order_url" target="_blank" >Click here</a> <br>
+                                      <span class="card-text"><b>Last Order Date:</b> {{ getLastOrderDate(item.guid) }} </span> <br>
+                                      <span class="card-text"><b>Daily Usage:</b> {{ getDailyUsage(item.guid) }} per day</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div> 
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Libraries for Bootstrap -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+   
+    <!-- Libraries for Vue Js -->
+    <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+    <script>
+        new Vue({
+            el: "#app",
+            mounted() {
+                axios.get(this.url)
+                    .then(response => this.items = response.data)
+                    .catch(error => console.error(error));      
+            },
+            data: {
+                url: 'https://my-json-server.typicode.com/flororsi/testapi/db',
+                items: [],
+                childrenSortOrder: 'ascending',
+                childrenSortBy: 'id',
+                productsSortOrder: 'ascending',
+                productsSortBy: 'product',
+            },       
+            methods: {
+                //The list of children is ordered according to the requested order
+                changeOrderChildren: function changeOrderChildren() {
+                    let children = this.items.children
+
+                    children = children.sort((a, b) => {
+                        // Sort by Name
+                        if (this.childrenSortBy == 'alphabetically') {
+                            let fa = a.first_name.toLowerCase()
+                            let fb = b.first_name.toLowerCase()
+                    
+                            if (fa < fb) {
+                                return -1
+                            }
+
+                            if (fa > fb) {
+                                return 1 
+                            }
+
+                            return 0
+                            
+                        // Sort by Id
+                        } else if (this.childrenSortBy == 'id') {
+                            return a.id - b.id
+                        }
+
+                    })
+                    
+                    // Show sorted array in descending or ascending order
+                    if (this.childrenSortOrder == 'descending') {
+                        children.reverse()
+                    }
+                    
+                    return children
+
+                },
+                 //The list of products is ordered according to the requested order
+                changeOrderProducts: function changeOrderProducts() {
+                    let products = this.items.products
+
+                    products = products.sort((a, b) => {
+                        if (this.productsSortBy == 'product') {
+                            let fa = a.Product.toLowerCase()
+                            let fb = b.Product.toLowerCase()
+                    
+                            if (fa < fb) {
+                                return -1
+                            }
+
+                            if (fa > fb) {
+                                return 1 
+                            }
+
+                            return 0
+                            
+                            // Sort by Brand
+                        } else if (this.productsSortBy == 'brand') {
+                            let fc = a.brand.toLowerCase()
+                            let fd = b.brand.toLowerCase()
+                    
+                            if (fc < fd) {
+                                return -1
+                            }
+
+                            if (fc > fd) {
+                                return 1 
+                            }
+
+                            return 0
+                            
+                        }
+                    })
+                    
+                    // Show sorted array in descending or ascending order
+                    if (this.productsSortOrder == 'descending') {
+                        products.reverse()
+                    }
+                    
+                    return products
+
+                },
+                //It obtains quantity inventory
+                getQuantityInventory: function getQuantityInventory(guid) {
+                    let inventory = this.items.inventory
+                    let quantityProduct = 0
+                    
+                    inventory.forEach(element => {
+                        
+                        if (element.guid == guid) {
+                            quantityProduct = element.qty
+                        }
+                    });
+
+                    return quantityProduct
+                },
+                //It obtains product name and brand name
+                getProductBrandName: function getProductBrandName(guid){
+                    let products = this.items.products
+                    let brandProductName = ""
+
+                    products.forEach(element => {
+                        if(element.guid == guid){
+                            brandProductName = element.Product + " made by " + element.brand
+                        }
+                    });
+                    return brandProductName
+                },
+                //It obtains last order date of sended product
+                getLastOrderDate: function getLastOrderDate(guid){
+                    let products = this.items.last_order_date
+                    let getLastOrderDate = ""
+
+                    products.forEach(element => {
+                        if(element.guid == guid){
+                            getLastOrderDate = element.date.substring(0,10)
+                        }
+                    });
+
+                    return getLastOrderDate
+                },
+                //It obtains daily usage of sended product
+                getDailyUsage: function getDailyUsage(guid){
+                    let dailyUsage = this.items.daily_usage
+                    let quantityDailyUsage = 0
+                    
+                    dailyUsage.forEach(element => {
+                        
+                        if (element.guid == guid) {
+                            quantityDailyUsage = element.qty
+                        }
+                    });
+
+                    return quantityDailyUsage
+                }
+
+            }
+
+        });
+        //Vue.config.devtools = true;
+    </script>
+</body>
+</html>
